@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { generateRandomChildren, generateSequentialChildren, generateRandomCycle } from '@/lib/gameLogic';
+import { generateRandomChildren, generateSequentialChildren, generateRandomCycle, MAX_MARRIAGE_AGE, MIN_PLAYER_AGE } from '@/lib/gameLogic';
 import { GameConfig } from '@/hooks/useGame';
 import { getUserSettings, saveUserSettings } from '@/lib/db';
 
@@ -40,8 +40,9 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
   const [step, setStep] = useState(existingConfig ? 5 : 0);
   const [direction, setDirection] = useState(1);
   
-  // Player name state
+  // Player state
   const [playerName, setPlayerName] = useState('');
+  const [playerAge, setPlayerAge] = useState<number>(0);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loadedSettings, setLoadedSettings] = useState(false);
   
@@ -61,6 +62,7 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
       const settings = await getUserSettings();
       if (settings) {
         setPlayerName(settings.playerName);
+        setPlayerAge(settings.playerAge || 0);
         setIsAnonymous(settings.isAnonymous);
       }
       setLoadedSettings(true);
@@ -73,12 +75,13 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
   const nextStep = async () => {
     setDirection(1);
     
-    // Save player name settings when leaving step 0
+    // Save player settings when leaving step 0
     if (step === 0) {
       const finalName = playerName.trim() || 'Anônimo';
       const finalIsAnonymous = !playerName.trim();
       await saveUserSettings({
         playerName: finalName,
+        playerAge: playerAge,
         isAnonymous: finalIsAnonymous,
       });
       setPlayerName(finalName);
@@ -116,7 +119,7 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
   };
 
   const handleComplete = () => {
-    const finalCycle = useDestinyCycle ? generateRandomCycle() : cycleNumber;
+    const finalCycle = useDestinyCycle ? generateRandomCycle(playerAge) : cycleNumber;
     onComplete({
       professions: existingConfig?.professions || professions,
       children: existingConfig?.children || children,
@@ -139,12 +142,12 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
 
   const canProceed = () => {
     switch (step) {
-      case 0: return true; // Name is optional
+      case 0: return playerAge >= MIN_PLAYER_AGE; // Age is required
       case 1: return true;
       case 2: return true;
       case 3: return professions.every(p => p.trim().length > 0);
       case 4: return partners.every(p => p.trim().length > 0);
-      case 5: return useDestinyCycle || (cycleNumber >= 13 && cycleNumber <= 110);
+      case 5: return useDestinyCycle || (cycleNumber >= playerAge && cycleNumber <= MAX_MARRIAGE_AGE);
       default: return true;
     }
   };
@@ -177,12 +180,12 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
                 exit={{ opacity: 0, height: 0 }}
               >
                 <label className="block text-sm text-muted-foreground mb-2">
-                  Idade de casamento (13-110 anos)
+                  Idade de casamento ({playerAge}-{MAX_MARRIAGE_AGE} anos)
                 </label>
                 <Input
                   type="number"
-                  min={13}
-                  max={110}
+                  min={playerAge}
+                  max={MAX_MARRIAGE_AGE}
                   value={cycleNumber || ''}
                   onChange={(e) => setCycleNumber(parseInt(e.target.value) || 0)}
                   className="input-mystic"
@@ -203,20 +206,44 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
               <User className="w-12 h-12 mx-auto text-primary animate-float" />
               <h2 className="text-2xl font-display text-primary">Quem é Você?</h2>
               <p className="text-muted-foreground">
-                Digite seu nome ou continue anônimo
+                Informe sua idade e nome (opcional)
               </p>
             </div>
 
             <div className="space-y-4">
-              <Input
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Seu nome (opcional)"
-                className="input-mystic text-center text-lg"
-                autoFocus
-              />
+              <div className="space-y-2">
+                <label className="block text-sm text-muted-foreground">
+                  Sua idade <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  value={playerAge ? String(playerAge) : ''}
+                  onValueChange={(v) => setPlayerAge(parseInt(v))}
+                >
+                  <SelectTrigger className="input-mystic">
+                    <SelectValue placeholder="Selecione sua idade" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {Array.from({ length: MAX_MARRIAGE_AGE - MIN_PLAYER_AGE + 1 }, (_, i) => MIN_PLAYER_AGE + i).map(age => (
+                      <SelectItem key={age} value={String(age)}>{age} anos</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm text-muted-foreground">
+                  Seu nome (opcional)
+                </label>
+                <Input
+                  value={playerName === 'Anônimo' ? '' : playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="Digite seu nome"
+                  className="input-mystic text-center text-lg"
+                />
+              </div>
+
               <p className="text-xs text-muted-foreground text-center">
-                {playerName.trim() 
+                {playerName.trim() && playerName !== 'Anônimo'
                   ? `O destino será revelado para ${playerName}` 
                   : 'Se não preencher, continuará como Anônimo'}
               </p>
@@ -424,12 +451,12 @@ export const ConfigWizard = ({ onComplete, onCancel, existingConfig }: ConfigWiz
                   exit={{ opacity: 0, height: 0 }}
                 >
                   <label className="block text-sm text-muted-foreground mb-2">
-                    Idade de casamento (13-110 anos)
+                    Idade de casamento ({playerAge}-{MAX_MARRIAGE_AGE} anos)
                   </label>
                   <Input
                     type="number"
-                    min={13}
-                    max={110}
+                    min={playerAge}
+                    max={MAX_MARRIAGE_AGE}
                     value={cycleNumber || ''}
                     onChange={(e) => setCycleNumber(parseInt(e.target.value) || 0)}
                     className="input-mystic"

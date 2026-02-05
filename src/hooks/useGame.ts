@@ -4,7 +4,8 @@ import {
   createGameState, 
   getActiveOptions, 
   isGameFinished, 
-  getFinalResults 
+  getFinalResults,
+  calculateGameSpeed 
 } from '@/lib/gameLogic';
 
 export interface GameConfig {
@@ -14,7 +15,7 @@ export interface GameConfig {
   cycleNumber: number;
 }
 
-export const useGame = () => {
+export const useGame = (playerAge: number = 20) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [highlightedPosition, setHighlightedPosition] = useState<{ sideIndex: number; optionIndex: number } | null>(null);
   const [lastEliminated, setLastEliminated] = useState<{ sideIndex: number; optionIndex: number } | null>(null);
@@ -45,6 +46,9 @@ export const useGame = () => {
 
     let count = 0;
     const targetCount = gameState.cycleNumber;
+    
+    // Calculate speed based on player age
+    const gameSpeed = calculateGameSpeed(targetCount);
 
     intervalRef.current = setInterval(() => {
       count++;
@@ -92,8 +96,8 @@ export const useGame = () => {
           setHighlightedPosition(null);
         }, 500);
       }
-    }, 800); // Speed: ~1 second per step
-  }, [gameState]);
+    }, gameSpeed);
+  }, [gameState, playerAge]);
 
   const resetGame = useCallback(() => {
     if (intervalRef.current) {

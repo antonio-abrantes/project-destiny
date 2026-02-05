@@ -13,6 +13,7 @@ export interface GameResult {
 export interface UserSettings {
   id: string;
   playerName: string;
+  playerAge: number;
   isAnonymous: boolean;
 }
 

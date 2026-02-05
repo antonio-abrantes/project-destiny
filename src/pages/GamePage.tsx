@@ -30,16 +30,20 @@ const GamePage = () => {
   const [savedConfig, setSavedConfig] = useState<GameConfig | null>(null);
   const [showRestartConfig, setShowRestartConfig] = useState(false);
   const [playerName, setPlayerName] = useState<string>('');
+  const [playerAge, setPlayerAge] = useState<number>(20);
 
-  // Load player name
+  // Load player settings
   useEffect(() => {
-    const loadPlayerName = async () => {
+    const loadPlayerSettings = async () => {
       const settings = await getUserSettings();
       if (settings?.playerName) {
         setPlayerName(settings.playerName);
       }
+      if (settings?.playerAge) {
+        setPlayerAge(settings.playerAge);
+      }
     };
-    loadPlayerName();
+    loadPlayerSettings();
   }, []);
   
   const {
@@ -51,9 +55,14 @@ const GamePage = () => {
     resetGame,
     restartWithSameData,
     getResults,
-  } = useGame();
+  } = useGame(playerAge);
 
-  const handleConfigComplete = useCallback((config: GameConfig) => {
+  const handleConfigComplete = useCallback(async (config: GameConfig) => {
+    // Reload player settings (age might have changed in wizard)
+    const settings = await getUserSettings();
+    if (settings?.playerAge) {
+      setPlayerAge(settings.playerAge);
+    }
     setSavedConfig(config);
     initGame(config);
     setPhase('playing');

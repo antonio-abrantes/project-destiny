@@ -150,7 +150,32 @@ export const getFinalResults = (sides: GameSide[]): {
   return { profession, children, partner, wealth };
 };
 
-// Generate random marriage age (13 to 110)
-export const generateRandomCycle = (): number => {
-  return Math.floor(Math.random() * 98) + 13; // 13 to 110
+// Generate random marriage age (minAge to MAX_MARRIAGE_AGE)
+export const MAX_MARRIAGE_AGE = 110;
+export const MIN_PLAYER_AGE = 10;
+
+export const generateRandomCycle = (minAge: number = 13): number => {
+  const range = MAX_MARRIAGE_AGE - minAge + 1;
+  return Math.floor(Math.random() * range) + minAge;
+};
+
+// Speed calculation based on player age
+// Constants for easy adjustment
+const BASE_SPEED_MS = 1000;     // Base speed: 1 second
+const SPEED_DECREASE_MS = 300;  // Decrease per age bracket
+const AGE_BRACKET = 20;         // Every 20 years
+const MIN_SPEED_MS = 150;       // Minimum speed limit
+
+export const calculateGameSpeed = (cycleNumber: number): number => {
+  // Calculate how many brackets above 20
+  const bracketsAbove20 = Math.max(0, Math.floor((cycleNumber - 1) / AGE_BRACKET));
+  
+  // Calculate speed reduction
+  const reduction = bracketsAbove20 * SPEED_DECREASE_MS;
+  
+  // Calculate final speed
+  const calculatedSpeed = BASE_SPEED_MS - reduction;
+  
+  // Ensure minimum speed
+  return Math.max(calculatedSpeed, MIN_SPEED_MS);
 };

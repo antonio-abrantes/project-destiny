@@ -24,6 +24,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { GameResult, getGameHistory, clearGameHistory, getWealthLabel, getUserSettings, saveUserSettings } from '@/lib/db';
+import { MAX_MARRIAGE_AGE, MIN_PLAYER_AGE } from '@/lib/gameLogic';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -31,7 +39,9 @@ export const SettingsDialog = () => {
   const [history, setHistory] = useState<GameResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [playerName, setPlayerName] = useState('');
+  const [playerAge, setPlayerAge] = useState<number>(0);
   const [savedName, setSavedName] = useState('');
+  const [savedAge, setSavedAge] = useState<number>(0);
 
   useEffect(() => {
     if (isOpen) {
@@ -49,7 +59,9 @@ export const SettingsDialog = () => {
     const settings = await getUserSettings();
     if (settings) {
       setPlayerName(settings.playerName);
+      setPlayerAge(settings.playerAge || 0);
       setSavedName(settings.playerName);
+      setSavedAge(settings.playerAge || 0);
     }
   };
 
@@ -58,16 +70,18 @@ export const SettingsDialog = () => {
     setHistory([]);
   };
 
-  const handleSaveName = async () => {
+  const handleSaveProfile = async () => {
     const finalName = playerName.trim() || 'Anônimo';
     await saveUserSettings({
       playerName: finalName,
+      playerAge: playerAge,
       isAnonymous: !playerName.trim(),
     });
     setSavedName(finalName);
+    setSavedAge(playerAge);
   };
 
-  const hasNameChanged = playerName !== savedName;
+  const hasProfileChanged = playerName !== savedName || playerAge !== savedAge;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -106,20 +120,36 @@ export const SettingsDialog = () => {
           {/* Profile Tab */}
           <TabsContent value="profile" className="flex-1 space-y-4 py-4">
             <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Sua Idade</label>
+              <Select
+                value={playerAge ? String(playerAge) : ''}
+                onValueChange={(v) => setPlayerAge(parseInt(v))}
+              >
+                <SelectTrigger className="input-mystic">
+                  <SelectValue placeholder="Selecione sua idade" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {Array.from({ length: MAX_MARRIAGE_AGE - MIN_PLAYER_AGE + 1 }, (_, i) => MIN_PLAYER_AGE + i).map(age => (
+                    <SelectItem key={age} value={String(age)}>{age} anos</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <label className="text-sm text-muted-foreground">Seu Nome</label>
               <Input
-                value={playerName}
+                value={playerName === 'Anônimo' ? '' : playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Digite seu nome"
+                placeholder="Digite seu nome (opcional)"
                 className="input-mystic"
               />
               <p className="text-xs text-muted-foreground">
-                Este nome será usado em todos os jogos futuros.
+                Estes dados serão usados em todos os jogos futuros.
               </p>
             </div>
-            {hasNameChanged && (
-              <Button onClick={handleSaveName} className="w-full btn-mystic">
-                Salvar Nome
+            {hasProfileChanged && (
+              <Button onClick={handleSaveProfile} className="w-full btn-mystic">
+                Salvar Perfil
               </Button>
             )}
           </TabsContent>
