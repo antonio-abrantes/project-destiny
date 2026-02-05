@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Quicksand:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Cosmic dark theme */
+    --background: 250 30% 8%;
+    --foreground: 45 30% 90%;
+
+    --card: 250 25% 12%;
+    --card-foreground: 45 30% 90%;
+
+    --popover: 250 25% 10%;
+    --popover-foreground: 45 30% 90%;
+
+    /* Mystical gold */
+    --primary: 45 90% 55%;
+    --primary-foreground: 250 30% 8%;
+
+    /* Deep purple */
+    --secondary: 270 50% 25%;
+    --secondary-foreground: 45 30% 90%;
+
+    --muted: 250 20% 18%;
+    --muted-foreground: 250 15% 55%;
+
+    /* Cosmic accent */
+    --accent: 280 70% 50%;
+    --accent-foreground: 45 30% 95%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 250 30% 20%;
+    --input: 250 25% 15%;
+    --ring: 45 90% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom colors */
+    --cosmic-purple: 270 60% 40%;
+    --cosmic-blue: 220 70% 45%;
+    --mystic-gold: 45 90% 55%;
+    --mystic-gold-light: 45 80% 70%;
+    --success: 150 70% 45%;
+    --eliminated: 0 70% 45%;
+
+    /* Gradients */
+    --gradient-cosmic: linear-gradient(135deg, hsl(270 60% 20%) 0%, hsl(250 30% 8%) 50%, hsl(220 60% 15%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(45 90% 55%) 0%, hsl(35 80% 45%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(250 25% 14%) 0%, hsl(250 25% 10%) 100%);
+    --gradient-button: linear-gradient(135deg, hsl(45 90% 55%) 0%, hsl(35 85% 50%) 50%, hsl(45 90% 55%) 100%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 30px hsl(45 90% 55% / 0.3);
+    --shadow-cosmic: 0 10px 40px hsl(270 60% 10% / 0.5);
+    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
+
+    /* Font families */
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Quicksand', sans-serif;
+
+    --sidebar-background: 250 25% 10%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 45 90% 55%;
+    --sidebar-primary-foreground: 250 30% 8%;
+    --sidebar-accent: 270 50% 25%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 250 30% 20%;
+    --sidebar-ring: 45 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: var(--font-body);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: var(--gradient-cosmic);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer components {
+  .text-glow {
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3);
+  }
+
+  .card-mystic {
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border));
+  }
+
+  .btn-mystic {
+    background: var(--gradient-button);
+    color: hsl(var(--primary-foreground));
+    font-family: var(--font-display);
+    font-weight: 600;
+    box-shadow: var(--shadow-glow);
+    transition: all 0.3s ease;
+  }
+
+  .btn-mystic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
+  }
+
+  .btn-mystic:active {
+    transform: translateY(0);
+  }
+
+  .input-mystic {
+    background: hsl(var(--input));
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    transition: all 0.3s ease;
+  }
+
+  .input-mystic:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.3);
+    outline: none;
+  }
+
+  .option-box {
+    background: hsl(var(--card));
+    border: 2px solid hsl(var(--border));
+    transition: all 0.3s ease;
+  }
+
+  .option-box.active {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+    transform: scale(1.05);
+  }
+
+  .option-box.eliminated {
+    border-color: hsl(var(--eliminated));
+    background: hsl(var(--eliminated) / 0.2);
+    opacity: 0.5;
+  }
+
+  .option-box.selected {
+    border-color: hsl(var(--success));
+    box-shadow: 0 0 20px hsl(var(--success) / 0.5);
+  }
+
+  .stars-bg {
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, hsl(var(--primary) / 0.3), transparent),
+      radial-gradient(2px 2px at 40px 70px, hsl(var(--accent) / 0.2), transparent),
+      radial-gradient(1px 1px at 90px 40px, hsl(var(--foreground) / 0.3), transparent),
+      radial-gradient(2px 2px at 130px 80px, hsl(var(--primary) / 0.2), transparent),
+      radial-gradient(1px 1px at 160px 120px, hsl(var(--accent) / 0.3), transparent);
+    background-size: 200px 200px;
+    animation: twinkle 4s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
+    50% { box-shadow: 0 0 40px hsl(var(--primary) / 0.6); }
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  .writing-vertical-lr {
+    writing-mode: vertical-lr;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
