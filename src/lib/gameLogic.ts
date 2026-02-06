@@ -155,7 +155,8 @@ export const MAX_MARRIAGE_AGE = 110;
 export const MIN_PLAYER_AGE = 10;
 
 export const generateRandomCycle = (minAge: number = 13): number => {
-  const range = MAX_MARRIAGE_AGE - minAge + 1;
+  const maxAge = minAge + 25;
+  const range = maxAge - minAge + 1;
   return Math.floor(Math.random() * range) + minAge;
 };
 
