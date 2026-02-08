@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, LogOut, AlertTriangle } from 'lucide-react';
+import { Play, LogOut, AlertTriangle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -20,11 +20,14 @@ import { useGame, GameConfig } from '@/hooks/useGame';
 import { saveGameResult, getUserSettings } from '@/lib/db';
 import { useNavigate } from 'react-router-dom';
 import { generateRandomCycle } from '@/lib/gameLogic';
+import { shareAppLink } from '@/lib/shareUtils';
+import { useToast } from '@/hooks/use-toast';
 
 type GamePhase = 'config' | 'playing' | 'finished';
 
 const GamePage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [phase, setPhase] = useState<GamePhase>('config');
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [savedConfig, setSavedConfig] = useState<GameConfig | null>(null);
@@ -85,7 +88,6 @@ const GamePage = () => {
   };
 
   const handleNewGame = async () => {
-    // Save current result
     const results = getResults();
     if (results) {
       await saveGameResult(results);
@@ -94,6 +96,16 @@ const GamePage = () => {
     setSavedConfig(null);
     setShowRestartConfig(false);
     setPhase('config');
+  };
+
+  const handleShareApp = async () => {
+    const shared = await shareAppLink('Estou jogando Destino! 🔮 Venha descobrir seu futuro também.');
+    if (!shared) {
+      toast({
+        title: "Link copiado!",
+        description: "O link foi copiado para a área de transferência.",
+      });
+    }
   };
 
   const handleFinish = useCallback(async () => {
@@ -125,6 +137,21 @@ const GamePage = () => {
           Sair
         </Button>
       </div>
+
+      {/* Share button */}
+      {phase === 'playing' && (
+        <div className="absolute top-4 right-4 z-10">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShareApp}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Compartilhar
+          </Button>
+        </div>
+      )}
 
       {/* Exit confirmation dialog */}
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>

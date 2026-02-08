@@ -1,11 +1,24 @@
 import { motion } from 'framer-motion';
-import { Sparkles, Play } from 'lucide-react';
+import { Sparkles, Play, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { useNavigate } from 'react-router-dom';
+import { shareAppLink } from '@/lib/shareUtils';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const shared = await shareAppLink('Descubra seu destino! 🔮 Jogue e veja o que o futuro reserva para você.');
+    if (!shared) {
+      toast({
+        title: "Link copiado!",
+        description: "O link foi copiado para a área de transferência.",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
@@ -121,6 +134,23 @@ const Index = () => {
                 <span className="text-xs text-muted-foreground">{item.label}</span>
               </motion.div>
             ))}
+          </motion.div>
+
+          {/* Share button */}
+          <motion.div 
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+          >
+            <Button
+              onClick={handleShare}
+              variant="outline"
+              className="border-primary/30 hover:bg-primary/10 text-sm"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Compartilhe com seus amigos
+            </Button>
           </motion.div>
         </motion.div>
       </main>
